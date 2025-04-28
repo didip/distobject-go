@@ -70,20 +70,6 @@ func main() {
 
 ## Running Tests Locally
 
-First, start Redis:
-
 ```bash
 docker compose up --build --abort-on-container-exit --exit-code-from test-runner
-```
-
-Or run tests manually:
-
-```bash
-make test
-```
-
-Run benchmarks:
-
-```
-make bench
 ```
