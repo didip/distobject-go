@@ -4,6 +4,9 @@
 [![Go Version](https://img.shields.io/badge/go-1.22-blue)](https://golang.org/dl/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
+![distobject](https://github.com/user-attachments/assets/3b7b53fa-879f-40b5-9412-cf360fca57a5)
+
+
 Distributed Object Library for Go (with Redis backend)
 
 ✅ Automatic dirty tracking  
