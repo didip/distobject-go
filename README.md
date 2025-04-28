@@ -6,6 +6,7 @@
 
 ![distobject](https://github.com/user-attachments/assets/3b7b53fa-879f-40b5-9412-cf360fca57a5)
 
+Also see: https://github.com/didip/distobject-py
 
 Distributed Object Library for Go (with Redis backend)
 
@@ -44,7 +45,7 @@ It serves as a demonstration of **how far AI can assist in building real, usable
 
 ```go
 import (
-    "github.com/yourname/distobject-go/distobject"
+    "github.com/didip/distobject-go/distobject"
     "time"
     "fmt"
 )
