@@ -44,7 +44,9 @@ It serves as a demonstration of **how far AI can assist in building real, usable
 
 ```go
 import (
-    "github.com/didip/distobject-go/distobject"
+    "github.com/yourname/distobject-go/distobject"
+    "time"
+    "fmt"
 )
 
 type User struct {
@@ -54,17 +56,51 @@ type User struct {
 
 func main() {
     r := distobject.NewRedisClient("localhost:6379")
-    user := &User{Name: "Alice", Email: "alice@example.com"}
+
+    user1 := &User{Name: "Alice", Email: "alice@example.com"}
+    user2 := &User{Name: "Bob", Email: "bob@example.com"}
 
     d := distobject.NewDistObject(r, "user", "user-updates")
-    _ = d.Save(user)
+    
+    _ = d.Save(user1)
+    id1 := d.ID()
 
-    // Later load
-    loaded := &User{}
     d2 := distobject.NewDistObject(r, "user", "user-updates")
-    _ = d2.Load(d.ID(), loaded)
+    _ = d2.Save(user2)
+    id2 := d2.ID()
 
-    fmt.Println(loaded.Name)  // Alice
+    // Start listener for all objects
+    _ = d.StartListener()
+
+    // Register both objects
+    d.AddObject(id1, user1)
+    d.AddObject(id2, user2)
+
+    // Simulate external updates
+    go func() {
+        time.Sleep(2 * time.Second)
+        updater := &User{}
+        updaterDist := distobject.NewDistObject(r, "user", "user-updates")
+        _ = updaterDist.Load(id1, updater)
+        updater.Email = "newalice@example.com"
+        updaterDist.MarkChanged("email")
+        _ = updaterDist.Save(updater)
+    }()
+
+    go func() {
+        time.Sleep(3 * time.Second)
+        updater := &User{}
+        updaterDist := distobject.NewDistObject(r, "user", "user-updates")
+        _ = updaterDist.Load(id2, updater)
+        updater.Name = "Robert"
+        updaterDist.MarkChanged("name")
+        _ = updaterDist.Save(updater)
+    }()
+
+    time.Sleep(5 * time.Second)
+
+    fmt.Println("Updated user1:", user1.Name, user1.Email)  // Alice newalice@example.com
+    fmt.Println("Updated user2:", user2.Name, user2.Email)  // Robert bob@example.com
 }
 ```
 
