@@ -6,12 +6,27 @@ services:
     ports:
       - "6379:6379"
 
+  distobject-py:
+    build:
+      context: ./distobject-py-container
+    volumes:
+      - shared-data:/shared
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
   test-runner:
     build:
       context: .
-      dockerfile: Dockerfile
-    depends_on:
-      - redis
+    volumes:
+      - shared-data:/shared
     environment:
       - REDIS_ADDR=redis:6379
-    command: go test ./...
+    depends_on:
+      - redis
+      - distobject-py
+    command: go test ./distobject/...
+
+volumes:
+  shared-data:
