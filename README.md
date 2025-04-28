@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/didip/distobject-go/actions/workflows/test.yml/badge.svg)](https://github.com/didip/distobject-go/actions/workflows/test.yml)
 [![Go Version](https://img.shields.io/badge/go-1.22-blue)](https://golang.org/dl/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 Distributed Object Library for Go (with Redis backend)
 
