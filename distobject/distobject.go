@@ -2,6 +2,7 @@ package distobject
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -37,7 +38,7 @@ func NewDistObject(r *RedisClient, prefix string, channel string) *DistObject {
 }
 
 func generateULID() string {
-	entropy := ulid.Monotonic(nil, 0)
+	entropy := ulid.Monotonic(rand.Reader, 0)
 	id := ulid.MustNew(ulid.Timestamp(time.Now()), entropy)
 	return id.String()
 }

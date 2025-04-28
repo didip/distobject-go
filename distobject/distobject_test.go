@@ -3,6 +3,7 @@ package distobject
 import (
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -149,4 +150,62 @@ func BenchmarkLoad(b *testing.B) {
 		d2 := NewDistObject(r, "benchuser", "benchuser-updates")
 		_ = d2.Load(id, loaded)
 	}
+}
+
+func TestMultiObjectLiveUpdate(t *testing.T) {
+	r := setupRedis()
+
+	// Create two users
+	user1 := &User{Name: "Alice", Email: "alice@example.com"}
+	user2 := &User{Name: "Bob", Email: "bob@example.com"}
+
+	d1 := NewDistObject(r, "user", "user-updates")
+	err := d1.Save(user1)
+	assert.NoError(t, err)
+	id1 := d1.ID()
+
+	d2 := NewDistObject(r, "user", "user-updates")
+	err = d2.Save(user2)
+	assert.NoError(t, err)
+	id2 := d2.ID()
+
+	// Create a shared listener
+	sharedListener := NewDistObject(r, "user", "user-updates")
+	err = sharedListener.StartListener()
+	assert.NoError(t, err)
+
+	// Register both users
+	sharedListener.AddObject(id1, user1)
+	sharedListener.AddObject(id2, user2)
+
+	// Simulate external updates
+	go func() {
+		time.Sleep(1 * time.Second)
+		updater := &User{}
+		updaterDist := NewDistObject(r, "user", "user-updates")
+		_ = updaterDist.Load(id1, updater)
+		updater.Email = "newalice@example.com"
+		updaterDist.MarkChanged("email")
+		_ = updaterDist.Save(updater)
+	}()
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		updater := &User{}
+		updaterDist := NewDistObject(r, "user", "user-updates")
+		_ = updaterDist.Load(id2, updater)
+		updater.Name = "Robert"
+		updaterDist.MarkChanged("name")
+		_ = updaterDist.Save(updater)
+	}()
+
+	// Give enough time for updates to propagate
+	time.Sleep(3 * time.Second)
+
+	// Check live updated fields
+	assert.Equal(t, "newalice@example.com", user1.Email)
+	assert.Equal(t, "Alice", user1.Name) // Name unchanged
+
+	assert.Equal(t, "Robert", user2.Name)
+	assert.Equal(t, "bob@example.com", user2.Email) // Email unchanged
 }
